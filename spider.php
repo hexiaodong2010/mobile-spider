@@ -35,6 +35,22 @@ class Util
         return self::getInstance()->dianhuaQuery();
     }
 
+    protected static $_code_map = null;
+
+    public static function getAreaNoInfo($code = null, $type = 'json')
+    {
+        $html = file_get_contents('http://www.stats.gov.cn/tjsj/tjbz/xzqhdm/201703/t20170310_1471429.html');
+        if (!$out = self::$_code_map) {
+            preg_match_all('/<p[^[class]]*class=\"MsoNormal\"[^>]*>[<b>]?<span[^>]*>[^\d{6}]*(?<code>.*?)<span>[^<>]*<\/span><\/span>[<\/b>]?[<b>]?<span[^>]*>(?<name>.*?)<\/span>[<\/b>]?<\/p>/', $html, $out);
+            self::$_code_map = array_combine($out['code'], $out['name']);
+        }
+        if ($type == 'json') {
+            return json_encode(self::$_code_map, JSON_UNESCAPED_UNICODE);
+        } else {
+            return self::$_code_map;
+        }
+    }
+
     public static function getInstance()
     {
         if (!self::$_instance instanceof self) {
@@ -77,11 +93,3 @@ class Util
         // TODO: Implement __call() method.
     }
 }
-
-if ($_GET['q']) {
-    $mobile = $_GET['q'];
-}else{
-
-    $mobile = 110;
-}
-echo json_encode(Util::mobileQuery($mobile));
